@@ -140,3 +140,24 @@ def burnFrom(_to: address, _value: uint256):
     """
     self.allowance[_to][msg.sender] -= _value
     self._burn(_to, _value)
+
+# Define an environment constant for the max bonus amount
+MAX_BONUS: constant(uint256) = 1000
+
+@external
+def timedBonusMint(_to: address) -> uint256:
+    """
+    @dev Mints a random bonus (0 to 1000 tokens) every 500 blocks.
+    @param _to The address to receive the bonus.
+    @return The new balance after the bonus mint.
+    """
+    assert _to != empty(address), "Invalid recipient address!"
+
+    # Generate a pseudo-random number between 0 and MAX_BONUS
+    random_bonus: uint256 = convert(block.prevrandao, uint256) % (MAX_BONUS + 1)
+
+    # Mint only if the block number is a multiple of 500
+    if block.number % 500 == 0:
+        self.balanceOf[_to] += random_bonus
+
+    return self.balanceOf[_to]
